@@ -62,7 +62,7 @@ function Contact() {
     <div className="space-y-3 mb-6 w-full max-w-md px-4">
       
       <a
-        href="tel:+1234567890"
+        href="tel:501444538"
         className="w-full bg-black text-white font-bold py-4 rounded-2xl shadow-lg flex items-center justify-center gap-2 active:scale-95 transition"
       >
         <span>📞 დარეკე მეპატრონეს</span>
