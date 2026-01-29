@@ -166,211 +166,70 @@
 
     // ---------------------- PetInteraction (game) ----------------------
     function PetInteraction() {
-  const GAME_DURATION = 20;
-  const [foods, setFoods] = React.useState([]);
-  const [score, setScore] = React.useState(0);
-  const [highScore, setHighScore] = React.useState(() =>
-    parseInt(localStorage.getItem("pet_feed_highscore") || "0")
-  );
-  const [timeLeft, setTimeLeft] = React.useState(GAME_DURATION);
-  const [isPlaying, setIsPlaying] = React.useState(false);
-  const [gameStatus, setGameStatus] = React.useState("idle"); // idle, playing, finished
-  const isStartingRef = React.useRef(false);
+      const GAME_DURATION = 20;
+      const [foods, setFoods] = React.useState([]);
+      const [score, setScore] = React.useState(0);
+      const [highScore, setHighScore] = React.useState(() => parseInt(localStorage.getItem('pet_feed_highscore') || '0'));
+      const [timeLeft, setTimeLeft] = React.useState(GAME_DURATION);
+      const [isPlaying, setIsPlaying] = React.useState(false);
+      const [gameStatus, setGameStatus] = React.useState('idle'); // idle, playing, finished
+      const isStartingRef = React.useRef(false);
 
-  // Reset start ref when idle
-  React.useEffect(() => {
-    if (gameStatus === "idle") isStartingRef.current = false;
-  }, [gameStatus]);
+      React.useEffect(() => {
+        if (gameStatus === 'idle') isStartingRef.current = false;
+      }, [gameStatus]);
 
-  // Timer
-  React.useEffect(() => {
-    let interval;
-    if (isPlaying && timeLeft > 0) {
-      interval = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            setIsPlaying(false);
-            setGameStatus("finished");
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [isPlaying, timeLeft]);
-
-  // Update high score
-  React.useEffect(() => {
-    if (gameStatus === "finished" && score > highScore) {
-      setHighScore(score);
-      localStorage.setItem("pet_feed_highscore", score.toString());
-    }
-  }, [gameStatus, score, highScore]);
-
-  // Spawn food
-  const spawnFood = React.useCallback(() => {
-    if (navigator.vibrate) navigator.vibrate(30);
-    const id = Date.now();
-    const newFood = {
-      id: id,
-      left: Math.random() * 80 + 10, // 10% - 90%
-      icon: ["🦴", "🍖", "🥩", "🍪"][Math.floor(Math.random() * 4)],
-      size: Math.random() + 1.5, // 1.5rem - 2.5rem
-    };
-    setFoods((prev) => [...prev, newFood]);
-    setTimeout(() => setFoods((prev) => prev.filter((f) => f.id !== id)), 3000);
-  }, []);
-
-  const handleInteraction = () => {
-    if (gameStatus === "finished") return;
-    if (gameStatus === "idle" && !isStartingRef.current) {
-      isStartingRef.current = true;
-      setGameStatus("playing");
-      setIsPlaying(true);
-      setScore(0);
-      setTimeLeft(GAME_DURATION);
-    }
-    if (gameStatus === "playing" || isStartingRef.current) {
-      setScore((prev) => prev + 1);
-      spawnFood();
-    }
-  };
-
-  return (
-    <>
-      {/* Scoreboard */}
-      {(gameStatus !== "idle" || score > 0) && (
-        <div className="fixed bottom-28 left-1/2 -translate-x-1/2 z-40 flex flex-col gap-2 animate-pop origin-bottom">
-          <div className="bg-white/90 backdrop-blur-md border border-amber-200 rounded-2xl p-3 min-w-[140px] shadow-lg">
-            <div className="flex justify-between items-center mb-1">
-              <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                Score
-              </span>
-              <span className="text-xl font-black text-amber-600">{score}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                Time
-              </span>
-              <span
-                className={`font-mono font-bold ${
-                  timeLeft < 5 ? "text-red-500 animate-pulse" : "text-gray-700"
-                }`}
-              >
-                {timeLeft}s
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Game over */}
-      {gameStatus === "finished" && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-pop">
-          <div className="bg-white rounded-3xl p-6 shadow-2xl max-w-xs w-full text-center relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-2 bg-amber-500"></div>
-            <button
-              onClick={() => {
-                setGameStatus("idle");
-                setScore(0);
-                setTimeLeft(GAME_DURATION);
-              }}
-              className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full"
-              aria-label="Close"
-            >
-              <div className="icon-x text-xl"></div>
-            </button>
-            <h3 className="text-2xl font-black text-gray-800 mb-2 mt-2">
-              Time's Up!
-            </h3>
-            <div className="py-4">
-              <div className="text-5xl font-black text-amber-500 mb-2">{score}</div>
-              <div className="text-sm text-gray-500 font-medium">Treats Given</div>
-            </div>
-            <div className="bg-amber-50 rounded-xl p-3 mb-6">
-              <div className="text-xs text-amber-700 font-bold uppercase tracking-wider mb-1">
-                Personal Best
-              </div>
-              <div className="text-xl font-bold text-amber-800">
-                {Math.max(score, highScore)}
-              </div>
-            </div>
-            <button
-              onClick={() => {
-                setGameStatus("idle");
-                setScore(0);
-                setTimeLeft(GAME_DURATION);
-              }}
-              className="w-full bg-amber-500 text-white font-bold py-3 px-6 rounded-2xl shadow-lg active:scale-95 transition"
-            >
-              Play Again
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Falling food */}
-      <div
-        className="fixed inset-0 pointer-events-none z-50 overflow-visible"
-        data-name="food-rain-container"
-      >
-        {foods.map((food) => (
-          <div
-            key={food.id}
-            className="absolute animate-drop"
-            style={{
-              top: "-3rem",
-              left: `${food.left}%`,
-              fontSize: `${food.size}rem`,
-            }}
-          >
-            {food.icon}
-          </div>
-        ))}
-      </div>
-
-      {/* Idle button */}
-      {gameStatus === "idle" && (
-        <button
-          onClick={handleInteraction}
-          className="fixed bottom-6 right-4 z-40 bg-white text-amber-600 font-bold py-3 px-5 rounded-2xl shadow-xl border border-amber-100 flex items-center gap-2 active:scale-95 transition animate-pop"
-        >
-          <span className="text-sm">Feed & Play?</span>
-          <div className="icon-paw-print text-lg"></div>
-        </button>
-      )}
-
-      {/* Playing button */}
-      {gameStatus === "playing" && (
-        <button
-          onClick={handleInteraction}
-          className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 bg-amber-500 hover:bg-amber-600 text-white w-24 h-24 rounded-full shadow-2xl border-4 border-white transition-all active:scale-90 active:rotate-12 group flex items-center justify-center animate-pop"
-          aria-label="Feed"
-        >
-          <div className="icon-bone text-4xl group-active:scale-125 transition-transform"></div>
-        </button>
-      )}
-
-      {/* Add drop animation styles */}
-      <style>
-        {`
-        @keyframes drop {
-          0% { transform: translateY(0) rotate(0deg); opacity: 0; }
-          10% { opacity: 1; }
-          100% { transform: translateY(30rem) rotate(360deg); opacity: 1; }
+      React.useEffect(() => {
+        let interval;
+        if (isPlaying && timeLeft > 0) {
+          interval = setInterval(() => {
+            setTimeLeft(prev => {
+              if(prev <= 1) {
+                setIsPlaying(false);
+                setGameStatus('finished');
+                return 0;
+              }
+              return prev - 1;
+            });
+          }, 1000);
         }
-        .animate-drop { animation: drop 3s linear forwards; }
-        `}
-      </style>
-    </>
-  );
-    } catch (error) {
-        console.error('PetInteraction component error:', error);
-        return null;
-    }
-}
+        return () => clearInterval(interval);
+      }, [isPlaying, timeLeft]);
 
+      React.useEffect(() => {
+        if(gameStatus === 'finished' && score > highScore) {
+          setHighScore(score);
+          localStorage.setItem('pet_feed_highscore', score.toString());
+        }
+      }, [gameStatus, score, highScore]);
+
+      const spawnFood = React.useCallback(() => {
+        if (navigator.vibrate) navigator.vibrate(30);
+        const id = Date.now();
+        const newFood = {
+          id: id,
+          left: Math.random() * 80 + 10,
+          icon: ['🦴','🍖','🥩','🍪'][Math.floor(Math.random()*4)],
+          size: Math.random() + 1.5
+        };
+        setFoods(prev => [...prev,newFood]);
+        setTimeout(()=>setFoods(prev=>prev.filter(f=>f.id!==id)),3000);
+      }, []);
+
+      const handleInteraction = () => {
+        if(gameStatus==='finished') return;
+        if(gameStatus==='idle' && !isStartingRef.current) {
+          isStartingRef.current=true;
+          setGameStatus('playing');
+          setIsPlaying(true);
+          setScore(0);
+          setTimeLeft(GAME_DURATION);
+        }
+        if(gameStatus==='playing' || isStartingRef.current){
+          setScore(prev=>prev+1);
+          spawnFood();
+        }
+      };
 
       return (
         <>
