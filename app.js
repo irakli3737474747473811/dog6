@@ -59,18 +59,27 @@ function Emergency() {
 // ---------------------- Contact ----------------------
 function Contact() {
   return (
-    <div className="space-y-3 mb-6 w-full max-w-md">
-      <a href="tel:+1234567890" className="btn-primary bg-black hover:bg-gray-800 border-none flex items-center justify-center gap-2">
-        <div className="icon-phone text-xl"></div>
-        <span>Call Owner</span>
+    <div className="space-y-3 mb-6 w-full max-w-md px-4">
+      
+      <a
+        href="tel:+1234567890"
+        className="w-full bg-black text-white font-bold py-4 rounded-2xl shadow-lg flex items-center justify-center gap-2 active:scale-95 transition"
+      >
+        <span>📞 დარეკე მეპატრონეს</span>
       </a>
-      <a href="https://wa.me/1234567890" className="btn-secondary text-green-600 border-green-100 bg-green-50 hover:bg-green-100 flex items-center justify-center gap-2">
-        <div className="icon-message-circle text-xl"></div>
-        <span>WhatsApp</span>
+
+      <a
+        href="https://wa.me/1234567890"
+        className="w-full bg-green-500 text-white font-bold py-4 rounded-2xl shadow-lg flex items-center justify-center gap-2 active:scale-95 transition"
+      >
+        <span>💬 WhatsApp</span>
       </a>
+
     </div>
   );
 }
+
+export default Contact;
 
 // ---------------------- Health ----------------------
 function Health() {
