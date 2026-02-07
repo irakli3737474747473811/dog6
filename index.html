@@ -184,7 +184,7 @@
       const [timeLeft, setTimeLeft] = React.useState(GAME_DURATION);
       const [isPlaying, setIsPlaying] = React.useState(false);
       const [gameStatus, setGameStatus] = React.useState('idle');
-      const [showScorePopup, setShowScorePopup] = React.useState(false); // NEW
+      const [showScorePopup, setShowScorePopup] = React.useState(false); // added for popup
       const isStartingRef = React.useRef(false);
 
       React.useEffect(() => { if (gameStatus==='idle') isStartingRef.current=false; }, [gameStatus]);
@@ -244,15 +244,22 @@
             ))}
           </div>
 
-          {/* ---------- Tap Tap Score Popup ---------- */}
+          {/* ---------------- Score Popup ---------------- */}
           {showScorePopup && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-              <div className="bg-white w-full max-w-xs rounded-3xl overflow-hidden shadow-2xl p-6 relative text-center">
-                <h2 className="text-lg font-bold mb-2">Tap Tap Game Score</h2>
-                <p className="text-3xl font-extrabold text-amber-600 mb-4">{score}</p>
-                <button onClick={()=>setShowScorePopup(false)} className="absolute top-3 right-3 w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                  <div className="icon-x"></div>
-                </button>
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+              <div className="bg-white w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl relative flex flex-col p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="font-bold text-gray-700 text-lg">Tap Tap Game Score</span>
+                  <button onClick={()=>{
+                    setShowScorePopup(false);
+                    setGameStatus('idle');
+                    setScore(0);
+                    setTimeLeft(GAME_DURATION);
+                  }} className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                    <div className="icon-x"></div>
+                  </button>
+                </div>
+                <p className="text-center text-2xl font-bold text-amber-600">{score}</p>
               </div>
             </div>
           )}
@@ -347,3 +354,4 @@
   </script>
 </body>
 </html>
+
