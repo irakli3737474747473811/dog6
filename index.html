@@ -21,21 +21,18 @@
   <link href="https://unpkg.com/lucide-static@0.516.0/font/lucide.css" rel="stylesheet">
 
   <style>
-  .no-scrollbar::-webkit-scrollbar { display: none; }
-  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-  /* Food fall animation — full screen and faster */
-  @keyframes drop {
-    0% { transform: translateY(0); opacity: 1; }
-    100% { transform: translateY(100vh); opacity: 0; } /* 100vh = full screen height */
-  }
+    @keyframes drop {
+      0% { transform: translateY(0); opacity: 1; }
+      100% { transform: translateY(100vh); opacity: 0; }
+    }
 
-  .animate-drop {
-    animation: drop 1.5s ease-in forwards; /* 1.5 seconds = faster */
-  }
-</style>
-
-
+    .animate-drop {
+      animation: drop 1.5s ease-in forwards;
+    }
+  </style>
 </head>
 <body class="bg-gray-50">
   <div id="root"></div>
@@ -97,12 +94,14 @@
 
     // ---------------------- Contact ----------------------
     function Contact() {
+      const OWNER_PHONE = "501444538";
+      const WHATSAPP = "1234567890";
       return (
         <div className="space-y-3 mb-6 w-full max-w-md px-4">
-          <a href="tel:501444538" className="w-full bg-black text-white font-bold py-4 rounded-2xl shadow-lg flex items-center justify-center gap-2 active:scale-95 transition">
+          <a href={`tel:${OWNER_PHONE}`} className="w-full bg-black text-white font-bold py-4 rounded-2xl shadow-lg flex items-center justify-center gap-2 active:scale-95 transition">
             <span>📞 დარეკე მეპატრონეს</span>
           </a>
-          <a href="https://wa.me/1234567890" className="w-full bg-green-500 text-white font-bold py-4 rounded-2xl shadow-lg flex items-center justify-center gap-2 active:scale-95 transition">
+          <a href={`https://wa.me/${WHATSAPP}`} className="w-full bg-green-500 text-white font-bold py-4 rounded-2xl shadow-lg flex items-center justify-center gap-2 active:scale-95 transition">
             <span>💬 WhatsApp</span>
           </a>
         </div>
@@ -176,7 +175,7 @@
       );
     }
 
-    // ---------------------- PetInteraction (game) ----------------------
+    // ---------------------- PetInteraction ----------------------
     function PetInteraction() {
       const GAME_DURATION = 20;
       const [foods, setFoods] = React.useState([]);
@@ -184,63 +183,31 @@
       const [highScore, setHighScore] = React.useState(() => parseInt(localStorage.getItem('pet_feed_highscore') || '0'));
       const [timeLeft, setTimeLeft] = React.useState(GAME_DURATION);
       const [isPlaying, setIsPlaying] = React.useState(false);
-      const [gameStatus, setGameStatus] = React.useState('idle'); // idle, playing, finished
+      const [gameStatus, setGameStatus] = React.useState('idle');
       const isStartingRef = React.useRef(false);
 
-      React.useEffect(() => {
-        if (gameStatus === 'idle') isStartingRef.current = false;
-      }, [gameStatus]);
-
+      React.useEffect(() => { if (gameStatus==='idle') isStartingRef.current=false; }, [gameStatus]);
       React.useEffect(() => {
         let interval;
-        if (isPlaying && timeLeft > 0) {
-          interval = setInterval(() => {
-            setTimeLeft(prev => {
-              if(prev <= 1) {
-                setIsPlaying(false);
-                setGameStatus('finished');
-                return 0;
-              }
-              return prev - 1;
-            });
-          }, 1000);
+        if(isPlaying && timeLeft>0){
+          interval=setInterval(()=>{ setTimeLeft(prev=>{ if(prev<=1){ setIsPlaying(false); setGameStatus('finished'); return 0;} return prev-1; }); }, 1000);
         }
-        return () => clearInterval(interval);
+        return ()=>clearInterval(interval);
       }, [isPlaying, timeLeft]);
+      React.useEffect(()=>{ if(gameStatus==='finished' && score>highScore){ setHighScore(score); localStorage.setItem('pet_feed_highscore',score.toString()); } },[gameStatus,score,highScore]);
 
-      React.useEffect(() => {
-        if(gameStatus === 'finished' && score > highScore) {
-          setHighScore(score);
-          localStorage.setItem('pet_feed_highscore', score.toString());
-        }
-      }, [gameStatus, score, highScore]);
-
-      const spawnFood = React.useCallback(() => {
-        if (navigator.vibrate) navigator.vibrate(30);
-        const id = Date.now();
-        const newFood = {
-          id: id,
-          left: Math.random() * 80 + 10,
-          icon: ['🦴','🍖','🥩','🍪'][Math.floor(Math.random()*4)],
-          size: Math.random() + 1.5
-        };
-        setFoods(prev => [...prev,newFood]);
+      const spawnFood = React.useCallback(()=>{
+        if(navigator.vibrate) navigator.vibrate(30);
+        const id=Date.now();
+        const newFood={id,left:Math.random()*80+10,icon:['🦴','🍖','🥩','🍪'][Math.floor(Math.random()*4)],size:Math.random()+1.5};
+        setFoods(prev=>[...prev,newFood]);
         setTimeout(()=>setFoods(prev=>prev.filter(f=>f.id!==id)),3000);
-      }, []);
+      },[]);
 
-      const handleInteraction = () => {
-        if(gameStatus==='finished') return;
-        if(gameStatus==='idle' && !isStartingRef.current) {
-          isStartingRef.current=true;
-          setGameStatus('playing');
-          setIsPlaying(true);
-          setScore(0);
-          setTimeLeft(GAME_DURATION);
-        }
-        if(gameStatus==='playing' || isStartingRef.current){
-          setScore(prev=>prev+1);
-          spawnFood();
-        }
+      const handleInteraction=()=>{
+        if(gameStatus==='finished')return;
+        if(gameStatus==='idle' && !isStartingRef.current){ isStartingRef.current=true; setGameStatus('playing'); setIsPlaying(true); setScore(0); setTimeLeft(GAME_DURATION);}
+        if(gameStatus==='playing' || isStartingRef.current){ setScore(prev=>prev+1); spawnFood(); }
       };
 
       return (
@@ -259,31 +226,6 @@
               </div>
             </div>
           )}
-          {gameStatus==='finished' && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-pop">
-              <div className="bg-white rounded-3xl p-6 shadow-2xl max-w-xs w-full text-center relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-2 bg-amber-500"></div>
-                <button onClick={()=>{setGameStatus('idle'); setScore(0); setTimeLeft(GAME_DURATION);}} className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full" aria-label="Close">
-                  <div className="icon-x text-xl"></div>
-                </button>
-                <h3 className="text-2xl font-black text-gray-800 mb-2 mt-2">Time's Up!</h3>
-                <div className="py-4">
-                  <div className="text-5xl font-black text-amber-500 mb-2">{score}</div>
-                  <div className="text-sm text-gray-500 font-medium">Treats Given</div>
-                </div>
-                <div className="bg-amber-50 rounded-xl p-3 mb-6">
-                  <div className="text-xs text-amber-700 font-bold uppercase tracking-wider mb-1">Personal Best</div>
-                  <div className="text-xl font-bold text-amber-800">{Math.max(score,highScore)}</div>
-                </div>
-                <button onClick={()=>{setGameStatus('idle'); setScore(0); setTimeLeft(GAME_DURATION);}} className="w-full bg-amber-500 text-white font-bold py-3 px-6 rounded-2xl shadow-lg active:scale-95 transition">Play Again</button>
-              </div>
-            </div>
-          )}
-          <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden" data-name="food-rain-container">
-            {foods.map(food=>(
-              <div key={food.id} className="absolute -top-10 animate-drop" style={{left:`${food.left}%`, fontSize:`${food.size}rem`}}>{food.icon}</div>
-            ))}
-          </div>
           {gameStatus==='idle' && (
             <button onClick={handleInteraction} className="fixed bottom-6 right-4 z-40 bg-white text-amber-600 font-bold py-3 px-5 rounded-2xl shadow-xl border border-amber-100 flex items-center gap-2 active:scale-95 transition animate-pop">
               <span className="text-sm">Feed & Play?</span>
@@ -294,6 +236,62 @@
             <button onClick={handleInteraction} className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 bg-amber-500 hover:bg-amber-600 text-white w-24 h-24 rounded-full shadow-2xl border-4 border-white transition-all active:scale-90 active:rotate-12 group flex items-center justify-center animate-pop" aria-label="Feed">
               <div className="icon-bone text-4xl group-active:scale-125 transition-transform"></div>
             </button>
+          )}
+          <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden" data-name="food-rain-container">
+            {foods.map(food=>(
+              <div key={food.id} className="absolute -top-10 animate-drop" style={{left:`${food.left}%`, fontSize:`${food.size}rem`}}>{food.icon}</div>
+            ))}
+          </div>
+        </>
+      );
+    }
+
+    // ---------------------- Partners ----------------------
+    function Partners() {
+      const [isOpen, setIsOpen] = React.useState(false);
+      const [activeAction, setActiveAction] = React.useState(null);
+
+      const handleOpen = (action) => {
+        setActiveAction(action);
+        setIsOpen(true);
+      };
+
+      const handleClose = (e) => {
+        if(e.target === e.currentTarget) setIsOpen(false);
+      };
+
+      return (
+        <>
+          {/* Partners buttons ABOVE game button on right */}
+          <div className="fixed bottom-20 right-4 z-50 flex flex-col gap-3">
+            <button
+              onClick={() => handleOpen('feed')}
+              className="bg-white text-orange-600 font-bold py-3 px-5 rounded-2xl shadow-xl border border-orange-200 flex items-center gap-2 active:scale-95 transition"
+            >
+              <span>დაკარგულები</span>
+              <div className="icon-bone text-lg"></div>
+            </button>
+          </div>
+
+          {isOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={handleClose}>
+              <div className="bg-white w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl relative flex flex-col max-h-[85vh]">
+                <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+                  <span className="font-bold text-gray-700">{activeAction === 'feed' ? 'Feed Partner' : 'Play Partner'}</span>
+                  <button onClick={() => setIsOpen(false)} className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                    <div className="icon-x"></div>
+                  </button>
+                </div>
+                <div className="flex-1 bg-gray-100">
+                  <iframe
+                    src={activeAction === 'feed' ? "https://www.lostdogsgeorgia.org/" : "https://www.lostdogsgeorgia.org/"}
+                    title="Partner Page"
+                    className="w-full h-full min-h-[400px]"
+                    loading="lazy"
+                  ></iframe>
+                </div>
+              </div>
+            </div>
           )}
         </>
       );
@@ -322,7 +320,8 @@
           <Contact />
           <Health />
           <Gallery />
-          <PetInteraction />
+          <PetInteraction />  {/* game button stays */}
+          <Partners />        {/* partners button above game button */}
           <Footer />
         </div>
       );
