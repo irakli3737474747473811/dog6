@@ -184,13 +184,14 @@
       const [timeLeft, setTimeLeft] = React.useState(GAME_DURATION);
       const [isPlaying, setIsPlaying] = React.useState(false);
       const [gameStatus, setGameStatus] = React.useState('idle');
+      const [showScorePopup, setShowScorePopup] = React.useState(false); // NEW
       const isStartingRef = React.useRef(false);
 
       React.useEffect(() => { if (gameStatus==='idle') isStartingRef.current=false; }, [gameStatus]);
       React.useEffect(() => {
         let interval;
         if(isPlaying && timeLeft>0){
-          interval=setInterval(()=>{ setTimeLeft(prev=>{ if(prev<=1){ setIsPlaying(false); setGameStatus('finished'); return 0;} return prev-1; }); }, 1000);
+          interval=setInterval(()=>{ setTimeLeft(prev=>{ if(prev<=1){ setIsPlaying(false); setGameStatus('finished'); setShowScorePopup(true); return 0;} return prev-1; }); }, 1000);
         }
         return ()=>clearInterval(interval);
       }, [isPlaying, timeLeft]);
@@ -242,6 +243,19 @@
               <div key={food.id} className="absolute -top-10 animate-drop" style={{left:`${food.left}%`, fontSize:`${food.size}rem`}}>{food.icon}</div>
             ))}
           </div>
+
+          {/* ---------- Tap Tap Score Popup ---------- */}
+          {showScorePopup && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+              <div className="bg-white w-full max-w-xs rounded-3xl overflow-hidden shadow-2xl p-6 relative text-center">
+                <h2 className="text-lg font-bold mb-2">Tap Tap Game Score</h2>
+                <p className="text-3xl font-extrabold text-amber-600 mb-4">{score}</p>
+                <button onClick={()=>setShowScorePopup(false)} className="absolute top-3 right-3 w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                  <div className="icon-x"></div>
+                </button>
+              </div>
+            </div>
+          )}
         </>
       );
     }
